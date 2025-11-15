@@ -7,7 +7,7 @@ import { subDays } from "date-fns";
  * @param since - The date to get activities since
  * @returns The activities
  */
-async function getActivities(since?: string): Promise<Activity[]> {
+export async function getActivities(since?: string): Promise<Activity[]> {
   return [
     {
       slug: `example-activity-1-${new Date().toISOString()}`,
@@ -23,7 +23,7 @@ async function getActivities(since?: string): Promise<Activity[]> {
   ];
 }
 
-async function main() {
+export async function main() {
   // Extract the number of days to scrape from the environment variable
   const days = process.env.SCRAPE_DAYS ? parseInt(process.env.SCRAPE_DAYS) : 1;
   const since = subDays(new Date(), days).toISOString();
@@ -44,4 +44,7 @@ async function main() {
   console.log("✓ Successfully added activities");
 }
 
-main();
+// Only run if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

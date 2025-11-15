@@ -3,7 +3,7 @@ import { Activity, ActivityDefinition } from "@/types/db";
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 
-async function main() {
+export async function main() {
   const db = getDb();
 
   // Check for LEADERBOARD_DATA_PATH environment variable
@@ -70,4 +70,7 @@ async function main() {
   );
 }
 
-main();
+// Only run if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

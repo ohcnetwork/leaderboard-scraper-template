@@ -8,7 +8,11 @@
     "db:import": "tsx scripts/import.ts",
     "db:scrape": "tsx scripts/scrape.ts",
     "db:export": "tsx scripts/export.ts",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "leaderboard",
@@ -33,6 +37,9 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "typescript": "^5.9.3"
+    "@vitest/coverage-v8": "^4.0.9",
+    "@vitest/ui": "^4.0.9",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.9"
   }
 }

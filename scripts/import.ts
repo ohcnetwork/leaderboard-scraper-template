@@ -4,7 +4,7 @@ import { readdir, readFile } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 
-async function main() {
+export async function main() {
   // Check for LEADERBOARD_DATA_PATH environment variable
   const flatDataPath = process.env.LEADERBOARD_DATA_PATH;
   if (!flatDataPath) {
@@ -70,4 +70,7 @@ async function main() {
   console.log("✓ Successfully imported all activities");
 }
 
-main();
+// Only run if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

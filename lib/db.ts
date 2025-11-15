@@ -18,10 +18,18 @@ export function getDb(): PGlite {
   // Initialize the database if it doesn't exist, otherwise return the existing instance.
   // This is to avoid creating a new database instance for each call to getDb().
   if (!dbInstance) {
-    dbInstance = new PGlite(dataPath);
+    // Support in-memory database for testing
+    dbInstance = dataPath === ":memory:" ? new PGlite() : new PGlite(dataPath);
   }
 
   return dbInstance;
+}
+
+/**
+ * Reset the database instance (useful for testing)
+ */
+export function resetDbInstance(): void {
+  dbInstance = null;
 }
 
 /**
@@ -71,15 +79,11 @@ export async function addContributors(contributors: string[]) {
   for (const batch of batchArray(contributors, 1000)) {
     const result = await db.query(
       `
-      INSERT INTO contributor (username, avatar_url, profile_url)
-      VALUES ${getSqlPositionalParamPlaceholders(batch.length, 3)}
+      INSERT INTO contributor (username, avatar_url)
+      VALUES ${getSqlPositionalParamPlaceholders(batch.length, 2)}
       ON CONFLICT (username) DO NOTHING;
     `,
-      batch.flatMap((c) => [
-        c,
-        `https://gravatar.com/avatar/${c}`,
-        `https://example.com/${c}`,
-      ])
+      batch.flatMap((c) => [c, `https://gravatar.com/avatar/${c}`])
     );
 
     console.log(

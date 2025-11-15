@@ -1,7 +1,10 @@
 import { upsertActivityDefinitions } from "@/lib/db";
 
-async function main() {
+export async function main() {
   await upsertActivityDefinitions();
 }
 
-main();
+// Only run if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
