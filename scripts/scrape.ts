@@ -25,8 +25,8 @@ export async function getActivities(since?: string): Promise<Activity[]> {
 
 export async function main() {
   // Extract the number of days to scrape from the environment variable
-  const days = process.env.SCRAPE_DAYS ? parseInt(process.env.SCRAPE_DAYS) : 1;
-  const since = subDays(new Date(), days).toISOString();
+  const days = process.env.SCRAPE_DAYS && parseInt(process.env.SCRAPE_DAYS);
+  const since = days ? subDays(new Date(), days).toISOString() : undefined;
 
   // Get the activities
   console.log(`Getting activities since ${since}...`);
