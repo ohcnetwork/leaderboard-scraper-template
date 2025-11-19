@@ -1,5 +1,5 @@
 import { addActivities, addContributors } from "@/lib/db";
-import { Activity, ActivityDefinition } from "@/types/db";
+import { Activity, ActivityDefinitions } from "@/types/db";
 import { subDays } from "date-fns";
 
 /**
@@ -12,13 +12,17 @@ export async function getActivities(since?: string): Promise<Activity[]> {
     {
       slug: `example-activity-1-${new Date().toISOString()}`,
       contributor: "example-contributor-1",
-      activity_definition: ActivityDefinition.EXAMPLE_ACTIVITY,
+      activity_definition: ActivityDefinitions.EXAMPLE_ACTIVITY,
       title: "Example Activity",
       occured_at: new Date(),
       link: "https://example.com",
       text: "Example Activity",
       points: 0,
-      meta: { example: "example" },
+      meta: {
+        // Example: Store aggregate metric data in meta field
+        // This will be used by the pre-build script to calculate aggregates
+        example_metric: 42,
+      },
     },
   ];
 }
