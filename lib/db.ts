@@ -3,8 +3,11 @@ import {
   GlobalAggregate,
   ContributorAggregate,
   ActivityDefinitions,
+  BadgeDefinition,
+  ContributorBadge,
 } from "@/types/db";
 import { PGlite } from "@electric-sql/pglite";
+import { format } from "date-fns";
 
 let dbInstance: PGlite | null = null;
 
@@ -223,4 +226,98 @@ export async function upsertContributorAggregates(
       `Upserted ${result.affectedRows}/${batch.length} contributor aggregates`
     );
   }
+}
+
+/**
+ * Upsert badge definition to the database
+ * @param definition - The badge definition to upsert
+ */
+export async function upsertBadgeDefinition(definition: BadgeDefinition) {
+  const db = getDb();
+
+  await db.query(
+    `
+    INSERT INTO badge_definition (slug, name, description, variants)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (slug) DO UPDATE SET 
+      name = EXCLUDED.name, 
+      description = EXCLUDED.description, 
+      variants = EXCLUDED.variants;
+  `,
+    [
+      definition.slug,
+      definition.name,
+      definition.description,
+      JSON.stringify(definition.variants),
+    ]
+  );
+}
+
+/**
+ * Upsert contributor badges to the database
+ * @param badges - The contributor badges to upsert
+ */
+export async function upsertContributorBadges(badges: ContributorBadge[]) {
+  if (badges.length === 0) {
+    return;
+  }
+
+  const db = getDb();
+
+  for (const batch of batchArray(badges, 1000)) {
+    const result = await db.query(
+      `
+      INSERT INTO contributor_badge (slug, badge, contributor, variant, achieved_on, meta)
+      VALUES ${getSqlPositionalParamPlaceholders(batch.length, 6)}
+      ON CONFLICT (slug) DO NOTHING;
+    `,
+      batch.flatMap((b) => [
+        b.slug,
+        b.badge,
+        b.contributor,
+        b.variant,
+        format(b.achieved_on, "yyyy-MM-dd"),
+        b.meta ? JSON.stringify(b.meta) : null,
+      ])
+    );
+
+    console.log(
+      `Awarded ${result.affectedRows}/${batch.length} new contributor badges`
+    );
+  }
+}
+
+/**
+ * Get activity counts for all contributors
+ * @returns Map of contributor username to activity count and first activity date
+ */
+export async function getActivityCounts(): Promise<
+  Map<string, { count: number; first_activity_at: Date }>
+> {
+  const db = getDb();
+
+  const result = await db.query<{
+    contributor: string;
+    count: string;
+    first_activity_at: string;
+  }>(
+    `
+    SELECT 
+      contributor, 
+      COUNT(*) as count,
+      MIN(occured_at) as first_activity_at
+    FROM activity 
+    GROUP BY contributor
+  `
+  );
+
+  const counts = new Map<string, { count: number; first_activity_at: Date }>();
+  for (const row of result.rows) {
+    counts.set(row.contributor, {
+      count: parseInt(row.count),
+      first_activity_at: new Date(row.first_activity_at),
+    });
+  }
+
+  return counts;
 }
