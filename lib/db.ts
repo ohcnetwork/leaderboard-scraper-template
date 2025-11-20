@@ -7,6 +7,7 @@ import {
   ContributorBadge,
 } from "@/types/db";
 import { PGlite } from "@electric-sql/pglite";
+import { format } from "date-fns";
 
 let dbInstance: PGlite | null = null;
 
@@ -275,7 +276,7 @@ export async function upsertContributorBadges(badges: ContributorBadge[]) {
         b.badge,
         b.contributor,
         b.variant,
-        b.achieved_on.toISOString().split("T")[0],
+        format(b.achieved_on, "yyyy-MM-dd"),
         b.meta ? JSON.stringify(b.meta) : null,
       ])
     );
